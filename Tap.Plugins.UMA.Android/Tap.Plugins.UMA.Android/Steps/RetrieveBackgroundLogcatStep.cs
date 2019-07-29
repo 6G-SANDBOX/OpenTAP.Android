@@ -60,9 +60,9 @@ namespace Tap.Plugins.UMA.Android.Steps
             AdbCommandResult result = logcat.Terminate(Log);
             LogAdbOutput(result);
 
-            string res = Adb.RetrieveLogcat(logcat, LocalFilename).ToString();
+            string[] res = Adb.RetrieveLogcat(logcat, LocalFilename);
 
-            foreach (string line in res.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+            foreach (string line in res)
             {
                 Log.Debug(line);
             }

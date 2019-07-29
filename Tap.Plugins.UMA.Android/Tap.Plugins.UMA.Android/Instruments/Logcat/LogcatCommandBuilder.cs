@@ -81,10 +81,10 @@ namespace Tap.Plugins.UMA.Android.Instruments.Logcat
             addFlagOptions(arguments);
             addBuffer(arguments);
             addFilename(arguments);
-            addFilter(arguments);
             addFormat(arguments);
             addRotateFileSize(arguments);
             addRotateFileCount(arguments);
+            addFilter(arguments);
 
             return string.Join(" ", arguments);
         }

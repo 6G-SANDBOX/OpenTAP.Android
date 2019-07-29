@@ -385,9 +385,9 @@ namespace Tap.Plugins.UMA.Android.Instruments
             return new LogcatCommandBuilder { Filter = filter ?? new LogcatFilter(), Buffer = buffer, Format = format };
         }
 
-        public StringBuilder RetrieveLogcat(BackgroundLogcat logcat, string localFilename = null)
+        public string[] RetrieveLogcat(BackgroundLogcat logcat, string localFilename = null)
         {
-            StringBuilder builder = new StringBuilder();
+            string[] res = new string[] { };
 
             IEnumerable<string> deviceFiles = getAvailableLogFiles(logcat.DeviceFilename);
 
@@ -398,7 +398,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
                 try
                 {
                     IEnumerable<string> localFiles = pullLogFiles(tempFolder, deviceFiles);
-                    combineLogFiles(localFiles, builder, localFilename);
+                    res = combineLogFiles(localFiles, localFilename);
                 }
                 finally
                 {
@@ -410,7 +410,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
                 Log.Warning($"No log files found ({logcat.DeviceFilename})");
             }
 
-            return builder;
+            return res;
         }
 
         private IEnumerable<string> getAvailableLogFiles(string fileName)
@@ -471,8 +471,10 @@ namespace Tap.Plugins.UMA.Android.Instruments
             return localFiles;
         }
 
-        private void combineLogFiles(IEnumerable<string> logFiles, StringBuilder builder, string filename)
+        private string[] combineLogFiles(IEnumerable<string> logFiles, string filename)
         {
+            List<string> res = new List<string>();
+
             foreach (string logFile in logFiles)
             {
                 using (TextReader sourceStream = File.OpenText(logFile))
@@ -480,7 +482,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
                     string line;
                     while ((line = sourceStream.ReadLine()) != null)
                     {
-                        builder.Append(line + "\n");
+                        res.Add(line);
                     }
                 }
             }
@@ -500,6 +502,8 @@ namespace Tap.Plugins.UMA.Android.Instruments
                     }
                 }
             }
+
+            return res.ToArray();
         }
 
         #endregion
