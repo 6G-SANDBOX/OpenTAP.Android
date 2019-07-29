@@ -119,33 +119,6 @@ namespace Tap.Plugins.UMA.Android.Steps
         [EnabledIf("SaveLogcatToDevice", true, HideIfDisabled = true)]
         public string DeviceFilename { get; set; }
 
-        [Display("Rotate Files",
-            Group: "Rotation",
-            Description: "If enabled, rotate the logcat output into several files.\n" +
-                "All existing files with the same name will be deleted first.",
-            Order: 5.0)]
-        [EnabledIf("SaveLogcatToDevice", true, HideIfDisabled = true)]
-        public bool RotateFiles { get; set; }
-
-        [Display("Rotate File Size",
-            Group: "Rotation",
-            Description: "Rotate the log file when it reaches this size.\n" +
-                "Default: 16 Kb",
-            Order: 5.1)]
-        [Unit("Kb")]
-        [EnabledIf("SaveLogcatToDevice", true, HideIfDisabled = true)]
-        [EnabledIf("RotateFiles", true, HideIfDisabled = true)]
-        public int RotateFileSize { get; set; }
-
-        [Display("Rotate File Count",
-            Group: "Rotation",
-            Description: "The maximum number of rotated log files.\n" +
-                "Default: 4",
-            Order: 5.2)]
-        [EnabledIf("SaveLogcatToDevice", true, HideIfDisabled = true)]
-        [EnabledIf("RotateFiles", true, HideIfDisabled = true)]
-        public int RotateFileCount { get; set; }
-
         [Display("Background Logcat")]
         [Output]
         [XmlIgnore]
@@ -177,16 +150,11 @@ namespace Tap.Plugins.UMA.Android.Steps
             DefaultFilterPriority = new Enabled<LogcatPriority> { IsEnabled = false, Value = LogcatPriority.Silent };
             Buffer = LogcatBufferExtensions.DefaultBuffers();
             Format = LogcatFormat.Threadtime;
-            DeviceFilename = "$EXTERNAL_STORAGE/triangle.log";
-            RotateFiles = false;
-            RotateFileSize = 16;
-            RotateFileCount = 4;
+            DeviceFilename = "$EXTERNAL_STORAGE/UMA.log";
 
             // Validation rules
             Rules.Add(() => (!SaveLogcatToLocal || !string.IsNullOrWhiteSpace(LocalFilename)), "Please set a valid local file path", "LocalFilename");
             Rules.Add(() => (!SaveLogcatToDevice || !string.IsNullOrWhiteSpace(DeviceFilename)), "Please set a valid device file path", "DeviceFilename");
-            Rules.Add(() => (!SaveLogcatToDevice || !RotateFiles || RotateFileSize > 0), "Please set a rotate file size larger than 0 Kb", "RotateFileSize");
-            Rules.Add(() => (!SaveLogcatToDevice || !RotateFiles || RotateFileCount > 0), "Please set a rotate file count larger than zero", "RotateFileCount");
         }
 
         public override void PrePlanRun()
@@ -200,7 +168,7 @@ namespace Tap.Plugins.UMA.Android.Steps
 
         public override void Run()
         {
-            if (SaveLogcatToDevice && RotateFiles)
+            if (SaveLogcatToDevice)
             {
                 AdbCommandResult result = Adb.DeleteExistingDeviceLogcatFiles(DeviceFilename, DeviceId);
                 LogAdbOutput(result);
