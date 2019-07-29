@@ -55,172 +55,22 @@ namespace Tap.Plugins.UMA.Android.Steps
 
         public override void Run()
         {
-            terminateBackgroundLogcat();
-            retrieveLogcat();
+            BackgroundLogcat logcat = BackgroundLogcat.Value;
+
+            AdbCommandResult result = logcat.Terminate(Log);
+            LogAdbOutput(result);
+
+            string res = Adb.RetrieveLogcat(logcat, LocalFilename).ToString();
+
+            foreach (string line in res.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None))
+            {
+                Log.Debug(line);
+            }
+
             if (DeleteFiles)
             {
-                deleteExistingLogFiles();
+                Adb.DeleteExistingDeviceLogcatFiles(logcat.DeviceFilename, logcat.DeviceId);
             }
-        }
-
-        private void terminateBackgroundLogcat()
-        {
-            if (BackgroundLogcat.Value.AdbProcess.HasFinished)
-            {
-                // We expected the process to be still running
-                Log.Warning("Background process already terminated");
-            }
-            else
-            {
-                Log.Debug("Terminating background process");
-                BackgroundLogcat.Value.AdbProcess.Terminate();
-            }
-
-            AdbCommandResult result = BackgroundLogcat.Value.AdbProcess.Result;
-
-            LogAdbOutput(result);
-        }
-
-        private void retrieveLogcat()
-        {
-            if (BackgroundLogcat.Value.RotateFiles)
-            {
-                retrieveRotatedLogcat();
-            }
-            else
-            {
-                retrieveSingleLogFile();
-            }
-        }
-
-        private void retrieveSingleLogFile()
-        {
-            Log.Info($"Pulling logcat into {LocalFilename}");
-            Adb.Pull(BackgroundLogcat.Value.DeviceFilename, LocalFilename, BackgroundLogcat.Value.DeviceId);
-        }
-
-        #region Rotated logcat
-
-        private void retrieveRotatedLogcat()
-        {
-            IEnumerable<string> deviceFiles = getAvailableLogFiles();
-
-            if (deviceFiles.Any())
-            {
-                string tempDirectory = createTemporaryDirectory();
-
-                try
-                {
-                    IEnumerable<string> localFiles = pullLogFiles(tempDirectory, deviceFiles);
-                    combineLogFiles(localFiles, LocalFilename);
-                }
-                finally
-                {
-                    Directory.Delete(tempDirectory, true);
-                }
-            }
-            else
-            {
-                Log.Warning("No log files found");
-            }
-        }
-
-        private IEnumerable<string> getAvailableLogFiles()
-        {
-            string filesToList = BackgroundLogcat.Value.DeviceFilename;
-            if (BackgroundLogcat.Value.RotateFiles)
-            {
-                filesToList += "*";
-            }
-
-            AdbCommandResult result = Adb.ExecuteAdbCommand($"shell \"ls {filesToList}\"");
-            List<string> deviceFiles = new List<string>();
-            if (result.Success)
-            {
-                foreach (string line in result.Output)
-                {
-                    deviceFiles.Add(line.Trim());
-                }
-            }
-            else
-            {
-                HandleResult(result);
-            }
-
-            return deviceFiles.OrderBy(getFileNumber).Reverse();
-        }
-
-        private string createTemporaryDirectory()
-        {
-            string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(path);
-            return path;
-        }
-
-        private IEnumerable<string> pullLogFiles(string tempDirectory, IEnumerable<string> deviceFiles)
-        {
-            Log.Info($"Pulling log files: {string.Join(", ", deviceFiles)}");
-
-            List<string> localFiles = new List<string>(deviceFiles.Count());
-
-            foreach (string deviceFile in deviceFiles)
-            {
-                string localFile = Path.Combine(tempDirectory, Path.GetFileName(deviceFile));
-                AdbCommandResult result = Adb.Pull(deviceFile, localFile);
-                if (result.Success)
-                {
-                    localFiles.Add(localFile);
-                }
-                else
-                {
-                    Log.Warning($"Could not pull {deviceFile}");
-                    LogAdbOutput(result);
-                }
-            }
-
-            return localFiles;
-        }
-
-        private void combineLogFiles(IEnumerable<string> logFiles, string filename)
-        {
-            Log.Info($"Combining log files into {filename}");
-
-            using (Stream targetStream = File.Open(filename, FileMode.Create))
-            {
-                foreach (string logFile in logFiles)
-                {
-                    using (Stream sourceStream = File.OpenRead(logFile))
-                    {
-                        sourceStream.CopyTo(targetStream);
-                    }
-                }
-            }
-        }
-
-        private int getFileNumber(string filename)
-        {
-            int num = Int32.MinValue;
-            Regex filenameRegex = new Regex($"{BackgroundLogcat.Value.DeviceFilename}(\\.(\\d+))?");
-            Match match = filenameRegex.Match(filename);
-            if (match.Success && match.Groups[2].Success)
-            {
-                num = int.Parse(match.Groups[2].Value);
-            }
-            return num;
-        }
-
-        #endregion
-
-        private void deleteExistingLogFiles()
-        {
-            string filename = BackgroundLogcat.Value.DeviceFilename;
-            if (BackgroundLogcat.Value.RotateFiles)
-            {
-                filename += "*";
-            }
-            Log.Debug($"Deleting existing log files: {filename}");
-            AdbCommandResult result = Adb.ExecuteAdbCommand($"shell \"rm -f {filename}\"", BackgroundLogcat.Value.DeviceId, retries: 1);
-            LogAdbOutput(result);
         }
     }
 }

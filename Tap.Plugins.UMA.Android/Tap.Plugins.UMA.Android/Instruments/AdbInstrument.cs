@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Tap.Plugins.UMA.Android.Instruments.Logcat;
 
 namespace Tap.Plugins.UMA.Android.Instruments
@@ -334,6 +337,16 @@ namespace Tap.Plugins.UMA.Android.Instruments
             adbProcess.Process.BeginOutputReadLine();
         }
 
+        public void LogAdbOutput(AdbCommandResult result)
+        {
+            Log.Debug("------ Start of adb output ------");
+            foreach (string line in result.Output)
+            {
+                Log.Debug(line);
+            }
+            Log.Debug("------- End of adb output -------");
+        }
+
         #endregion
 
         #region Logcat handling
@@ -359,7 +372,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
         {
             LogcatCommandBuilder builder = baseBuilder(filter, buffer, format);
             builder.Filename = deviceFilename;
-            builder.RotateFileSize = 16; // Kb
+            builder.RotateFileSize = 16384; // 16Mb
             builder.RotateFileCount = 8;
             builder.DumpAndExit = false;
 
@@ -370,6 +383,123 @@ namespace Tap.Plugins.UMA.Android.Instruments
         private LogcatCommandBuilder baseBuilder(LogcatFilter filter, LogcatBuffer buffer, LogcatFormat format)
         {
             return new LogcatCommandBuilder { Filter = filter ?? new LogcatFilter(), Buffer = buffer, Format = format };
+        }
+
+        public StringBuilder RetrieveLogcat(BackgroundLogcat logcat, string localFilename = null)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            IEnumerable<string> deviceFiles = getAvailableLogFiles(logcat.DeviceFilename);
+
+            if (deviceFiles.Count() != 0)
+            {
+                string tempFolder = createTempFolder();
+
+                try
+                {
+                    IEnumerable<string> localFiles = pullLogFiles(tempFolder, deviceFiles);
+                    combineLogFiles(localFiles, builder, localFilename);
+                }
+                finally
+                {
+                    Directory.Delete(tempFolder, true);
+                }
+            }
+            else
+            {
+                Log.Warning($"No log files found ({logcat.DeviceFilename})");
+            }
+
+            return builder;
+        }
+
+        private IEnumerable<string> getAvailableLogFiles(string fileName)
+        {
+            string listfiles = fileName + "*";
+            Regex filenameRegex = new Regex($"{fileName}(\\.(\\d+))?");
+
+            AdbCommandResult result = this.ExecuteAdbCommand($"shell \"ls {listfiles}\"");
+            List<string> files = new List<string>();
+
+            if (result.Success)
+            {
+                foreach (string line in result.Output) { files.Add(line.Trim()); }
+            }
+
+            return files.OrderBy((f) => getFileNumber(f, filenameRegex)).Reverse();
+        }
+
+        private int getFileNumber(string filename, Regex regex)
+        {
+            int num = int.MinValue;
+            Match match = regex.Match(filename);
+            if (match.Success && match.Groups[2].Success)
+            {
+                num = int.Parse(match.Groups[2].Value);
+            }
+            return num;
+        }
+
+        private string createTempFolder()
+        {
+            string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(path);
+            return path;
+        }
+
+        private IEnumerable<string> pullLogFiles(string tempDirectory, IEnumerable<string> deviceFiles)
+        {
+            Log.Info($"Pulling log files: {string.Join(", ", deviceFiles)}");
+
+            List<string> localFiles = new List<string>(deviceFiles.Count());
+
+            foreach (string deviceFile in deviceFiles)
+            {
+                string localFile = Path.Combine(tempDirectory, Path.GetFileName(deviceFile));
+                AdbCommandResult result = this.Pull(deviceFile, localFile);
+                if (result.Success)
+                {
+                    localFiles.Add(localFile);
+                }
+                else
+                {
+                    Log.Error($"Could not pull {deviceFile}");
+                    LogAdbOutput(result);
+                }
+            }
+
+            return localFiles;
+        }
+
+        private void combineLogFiles(IEnumerable<string> logFiles, StringBuilder builder, string filename)
+        {
+            foreach (string logFile in logFiles)
+            {
+                using (TextReader sourceStream = File.OpenText(logFile))
+                {
+                    string line;
+                    while ((line = sourceStream.ReadLine()) != null)
+                    {
+                        builder.Append(line + "\n");
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(filename))
+            {
+                Log.Info($"Combining log files into {filename}");
+
+                using (Stream targetStream = File.Open(filename, FileMode.Create))
+                {
+                    foreach (string logFile in logFiles)
+                    {
+                        using (Stream sourceStream = File.OpenRead(logFile))
+                        {
+                            sourceStream.CopyTo(targetStream);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

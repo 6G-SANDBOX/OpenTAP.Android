@@ -23,10 +23,7 @@ namespace Tap.Plugins.UMA.Android.Steps
 
         #endregion
 
-        public AdbStepBase()
-        {
-
-        }
+        public AdbStepBase() { }
 
         /// <summary>
         /// Sets the verdict to <c>Verdict.Fail</c> if the command was not successful, and logs its output.
@@ -47,14 +44,7 @@ namespace Tap.Plugins.UMA.Android.Steps
 
         protected void LogAdbOutput(AdbCommandResult result)
         {
-            Log.Debug("Command was {0}", result.Success ? "succesful" : "not sucessful");
-
-            Log.Debug("------ Start of adb output ------");
-            foreach (string line in result.Output)
-            {
-                Log.Debug(line);
-            }
-            Log.Debug("------- End of adb output -------");
+            Adb.LogAdbOutput(result);
         }
     }
 }
