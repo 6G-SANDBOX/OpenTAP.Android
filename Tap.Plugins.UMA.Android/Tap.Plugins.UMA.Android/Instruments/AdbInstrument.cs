@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Tap.Plugins.UMA.Android.Instruments.Logcat;
 
 namespace Tap.Plugins.UMA.Android.Instruments
 {
@@ -199,34 +200,6 @@ namespace Tap.Plugins.UMA.Android.Instruments
             return ExecuteAdbCommand(arguments, deviceId, timeoutMillis, retries, retryWaitMillis);
         }
 
-        /// <summary>
-        /// Sets or unsets the airplane mode of an Android device.
-        /// </summary>
-        /// <remarks>
-        /// This method uses several adb commands to set or unset the airplane mode. The caller can
-        /// set the timeout that will be applied to each command, but not to the whole process.
-        /// </remarks>
-        /// <param name="enable"><c>true</c> to enable airplane mode; <c>false</c> to disable it</param>
-        /// <param name="deviceId">The ID of the device; can be <c>null</c> if there is only one device connected</param>
-        /// <param name="timeoutMillis">A timeout in milliseconds to wait before terminating each adb command</param>
-        /// <returns>The result of executing the adb command</returns>
-        public AdbCommandResult SetAirplaneMode(bool enable, string deviceId = null, int timeoutMillis = PROCESS_LONG_TIMEOUT_MILLIS)
-        {
-            AdbCommandResult settingResult = setAirplaneModeSetting(deviceId, enable);
-            if (!settingResult.Success)
-            {
-                return settingResult;
-            }
-
-            AdbCommandResult intentResult = sendAirplaneModeIntent(deviceId, enable);
-
-            // Insert output from first command before the output from the second
-            intentResult.Output.Insert(0, Environment.NewLine);
-            intentResult.Output.InsertRange(0, settingResult.Output);
-
-            return intentResult;
-        }
-
         public AdbCommandResult Dumpsys(string service, string deviceId = null)
         {
             string arguments = $"shell dumpsys {service}";
@@ -363,6 +336,44 @@ namespace Tap.Plugins.UMA.Android.Instruments
 
         #endregion
 
+        #region Logcat handling
+
+        public AdbCommandResult DeleteExistingDeviceLogcatFiles(string filename, string deviceId)
+        {
+            Log.Debug($"Deleting existing log files: {filename}*");
+            AdbCommandResult result = this.ExecuteAdbCommand($"shell \"rm -f {filename}*\"", deviceId, retries: 1);
+            return result;
+        }
+
+        public AdbCommandResult ExecuteLogcat(string deviceId = null,
+            LogcatFilter filter = null, LogcatBuffer buffer = LogcatBuffer.Main, LogcatFormat format = LogcatFormat.Threadtime)
+        {
+            LogcatCommandBuilder builder = baseBuilder(filter, buffer, format);
+            builder.DumpAndExit = true;
+
+            return this.ExecuteAdbCommand(builder.Build(), deviceId);
+        }
+
+        public BackgroundLogcat ExecuteBackgroundLogcat(string deviceFilename, string deviceId = null,
+            LogcatFilter filter = null, LogcatBuffer buffer = LogcatBuffer.Main, LogcatFormat format = LogcatFormat.Threadtime)
+        {
+            LogcatCommandBuilder builder = baseBuilder(filter, buffer, format);
+            builder.Filename = deviceFilename;
+            builder.RotateFileSize = 16; // Kb
+            builder.RotateFileCount = 8;
+            builder.DumpAndExit = false;
+
+            AdbProcess process = this.ExecuteAdbBackgroundCommand(builder.Build(), deviceId);
+            return new BackgroundLogcat(process, deviceId, deviceFilename, rotateFiles: true);
+        }
+
+        private LogcatCommandBuilder baseBuilder(LogcatFilter filter, LogcatBuffer buffer, LogcatFormat format)
+        {
+            return new LogcatCommandBuilder { Filter = filter ?? new LogcatFilter(), Buffer = buffer, Format = format };
+        }
+
+        #endregion
+
         #region Background commands handling
 
         private void terminateDanglingBackgroundCommands()
@@ -402,22 +413,6 @@ namespace Tap.Plugins.UMA.Android.Instruments
                 backgroundCommands.Remove(adbProcess);
                 Log.Debug($"Removed background command; {backgroundCommands.Count} background command(s)");
             }
-        }
-
-        #endregion
-
-        #region Airplane mode
-
-        private AdbCommandResult setAirplaneModeSetting(string deviceId, bool enable, int timeoutMillis = PROCESS_TIMEOUT_MILLIS)
-        {
-            string arguments = string.Format("shell settings put global airplane_mode_on {0}", enable ? "1" : "0");
-            return ExecuteAdbCommand(arguments, deviceId, timeoutMillis);
-        }
-
-        private AdbCommandResult sendAirplaneModeIntent(string deviceId, bool enable, int timeoutMillis = PROCESS_LONG_TIMEOUT_MILLIS)
-        {
-            string arguments = string.Format("shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state {0}", enable ? "true" : "false");
-            return ExecuteAdbCommand(arguments, deviceId, timeoutMillis);
         }
 
         #endregion

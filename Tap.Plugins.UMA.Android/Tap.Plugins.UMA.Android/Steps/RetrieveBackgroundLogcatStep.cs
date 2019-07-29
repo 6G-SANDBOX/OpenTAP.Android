@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Tap.Plugins.UMA.Android.Instruments;
+using Tap.Plugins.UMA.Android.Instruments.Logcat;
 
 namespace Tap.Plugins.UMA.Android.Steps
 {

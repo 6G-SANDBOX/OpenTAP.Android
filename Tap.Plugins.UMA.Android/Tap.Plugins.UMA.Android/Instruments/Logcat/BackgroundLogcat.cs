@@ -7,8 +7,9 @@
 // This file cannot be modified or redistributed. This header cannot be removed.
 
 using Tap.Plugins.UMA.Android.Instruments;
+using Keysight.Tap;
 
-namespace Tap.Plugins.UMA.Android.Steps
+namespace Tap.Plugins.UMA.Android.Instruments.Logcat
 {
     public class BackgroundLogcat
     {
@@ -23,6 +24,20 @@ namespace Tap.Plugins.UMA.Android.Steps
             DeviceId = deviceId;
             DeviceFilename = deviceFilename;
             RotateFiles = rotateFiles;
+        }
+
+        public AdbCommandResult Terminate(TraceSource log = null)
+        {
+            if (AdbProcess.HasFinished && log != null)
+            {
+                log.Warning("Background process already terminated");
+            }
+            else
+            {
+                if (log != null) { log.Info("Terminating background process"); }
+                AdbProcess.Terminate();
+            }
+            return AdbProcess.Result;
         }
     }
 }

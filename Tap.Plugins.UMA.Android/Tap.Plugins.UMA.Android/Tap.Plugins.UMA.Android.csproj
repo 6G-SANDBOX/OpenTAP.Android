@@ -76,7 +76,7 @@
     <Compile Include="Steps\AdbCommandStep.cs" />
     <Compile Include="Steps\AdbCommandStepBase.cs" />
     <Compile Include="Steps\AdbStepBase.cs" />
-    <Compile Include="Steps\BackgroundLogcat.cs" />
+    <Compile Include="Instruments\Logcat\BackgroundLogcat.cs" />
     <Compile Include="Steps\ClearLogcatStep.cs" />
     <Compile Include="Steps\LogcatExecutionMode.cs" />
     <Compile Include="Steps\LogcatFilterPair.cs" />

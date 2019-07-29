@@ -51,7 +51,7 @@ namespace Tap.Plugins.UMA.Android.Steps
             Order: 2.0)]
         public List<LogcatFilterPair> FilterPairs { get; set; }
 
-        [Display(Name: "Clean filter tags", 
+        [Display(Name: "Clean filter tags",
             Group: "Filter",
             Description: "Removes duplicated or empty entries from the list of filters.",
             Order: 2.1)]
@@ -202,19 +202,17 @@ namespace Tap.Plugins.UMA.Android.Steps
         {
             if (SaveLogcatToDevice && RotateFiles)
             {
-                deleteExistingRotateLogFiles();
+                AdbCommandResult result = Adb.DeleteExistingDeviceLogcatFiles(DeviceFilename, DeviceId);
+                LogAdbOutput(result);
             }
-
-            string logcatArguments = buildArguments();
 
             if (LogcatExecutionMode.Continuous == ExecutionMode)
             {
-                AdbProcess process = Adb.ExecuteAdbBackgroundCommand(logcatArguments, DeviceId);
-                BackgroundLogcat = new BackgroundLogcat(process, DeviceId, DeviceFilename, RotateFiles);
+                BackgroundLogcat = Adb.ExecuteBackgroundLogcat(DeviceFilename, DeviceId, buildFilter(), Buffer, Format);
             }
             else
             {
-                AdbCommandResult result = Adb.ExecuteAdbCommand(logcatArguments, DeviceId);
+                AdbCommandResult result = Adb.ExecuteLogcat(DeviceId, buildFilter(), Buffer, Format);
 
                 if (LogcatOutputMode.LocalFile == OutputMode)
                 {
@@ -239,35 +237,6 @@ namespace Tap.Plugins.UMA.Android.Steps
 
             FilterPairs.Clear();
             FilterPairs.AddRange(cleaned);
-        }
-
-        private void deleteExistingRotateLogFiles()
-        {
-            Log.Debug($"Deleting existing log files: {DeviceFilename}*");
-            AdbCommandResult result = Adb.ExecuteAdbCommand($"shell \"rm -f {DeviceFilename}*\"", DeviceId, retries: 1);
-            LogAdbOutput(result);
-        }
-
-        private string buildArguments()
-        {
-            LogcatCommandBuilder builder = new LogcatCommandBuilder();
-            builder.Filter = buildFilter();
-            builder.Buffer = Buffer;
-            builder.Format = Format;
-            if (SaveLogcatToDevice)
-            {
-                builder.Filename = DeviceFilename;
-                if (RotateFiles)
-                {
-                    builder.RotateFileSize = RotateFileSize;
-                    builder.RotateFileCount = RotateFileCount;
-                }
-                if (LogcatExecutionMode.Continuous == ExecutionMode)
-                {
-                    builder.DumpAndExit = false;
-                }
-            }
-            return builder.Build();
         }
 
         private LogcatFilter buildFilter()
@@ -299,7 +268,6 @@ namespace Tap.Plugins.UMA.Android.Steps
                 }
             }
         }
-
 
         #endregion
 
