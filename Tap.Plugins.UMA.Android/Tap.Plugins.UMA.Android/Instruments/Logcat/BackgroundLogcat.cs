@@ -18,7 +18,7 @@ namespace Tap.Plugins.UMA.Android.Instruments.Logcat
         public string DeviceId { get; private set; }
         public string DeviceFilename { get; private set; }
         public bool RotateFiles { get; private set; }
-        public DateTime StartTime { get; private set; }
+        public DateTime StartTime { get; set; }
 
         public BackgroundLogcat(AdbProcess adbProcess, string deviceId, string deviceFilename, bool rotateFiles)
         {
