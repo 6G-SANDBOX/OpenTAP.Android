@@ -9,9 +9,9 @@ $(GitVersion) - Gets the version from Git.
 $(GitBranch) - Gets the branch name from Git.
 $(GitBranchVersion) - Gets the version number in the recommended format Major.Minor.Build-PreRelease+CommitHash.BranchName.
 -->
-<Package Name="Android" xmlns="http://keysight.com/schemas/TAP/Package" InfoLink="" Version="0.1.0-alpha">
-  <Description>This is my TAP plugin package.</Description>
+<Package Name="Android" xmlns="http://keysight.com/schemas/TAP/Package" InfoLink="" Version="$(GitBranchVersion)">
+  <Description>Base plugin for controlling Android devices and applications through Adb.</Description>
   <Files>
-    <File Path="Android\Tap.Plugins.UMA.Android.dll" Obfuscate="true" SetAssemblyInfo="Version"></File>
+    <File Path="UMA\Tap.Plugins.UMA.Android.dll" Obfuscate="false" SetAssemblyInfo="Version"></File>
   </Files>
 </Package>
