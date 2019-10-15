@@ -8,7 +8,7 @@
 
 using Tap.Plugins.UMA.Android.Instruments;
 using System;
-using Keysight.Tap;
+using OpenTap;
 
 namespace Tap.Plugins.UMA.Android.Instruments.Logcat
 {

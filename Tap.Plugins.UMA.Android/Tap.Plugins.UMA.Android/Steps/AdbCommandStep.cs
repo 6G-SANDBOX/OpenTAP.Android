@@ -7,7 +7,7 @@
 // This file cannot be modified or redistributed. This header cannot be removed.
 
 using System;
-using Keysight.Tap;
+using OpenTap;
 using Tap.Plugins.UMA.Android.Instruments;
 
 namespace Tap.Plugins.UMA.Android.Steps

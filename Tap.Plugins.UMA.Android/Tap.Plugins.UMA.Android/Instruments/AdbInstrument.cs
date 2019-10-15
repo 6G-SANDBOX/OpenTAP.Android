@@ -3,7 +3,7 @@
 //
 // This file cannot be modified or redistributed. This header cannot be removed.
 
-using Keysight.Tap;
+using OpenTap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +18,6 @@ namespace Tap.Plugins.UMA.Android.Instruments
     [Display("adb Instrument",
         Group: "UMA",
         Description: "Instrument for executing commands through Android's adb tool")]
-    [ShortName("ADB")]
     public class AdbInstrument : Instrument
     {
         #region Settings
@@ -68,6 +67,8 @@ namespace Tap.Plugins.UMA.Android.Instruments
 
         public AdbInstrument()
         {
+            Name = "ADB";
+
             backgroundCommands = new List<AdbProcess>();
 
             // Default values
@@ -237,7 +238,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
             for (int i = 1; i < retries && !result.Success; i++)
             {
                 Log.Warning($"Error while executing command ({i}/{retries}); retrying after {retryWaitMillis} ms...");
-                TestPlan.Sleep(retryWaitMillis);
+                TapThread.Sleep(retryWaitMillis);
                 result = executeCommand(path, arguments, timeoutMillis);
             }
             return result;

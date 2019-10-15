@@ -6,12 +6,12 @@ Configuration: Can be any kind of information, such as bit version or git branch
 
 For Version and Configuration the following macros are available (Only works if the project directory is under Git source control):
 $(GitVersion) - Gets the version from Git.
-$(GitBranch) - Gets the branch name from Git.
-$(GitBranchVersion) - Gets the version number in the recommended format Major.Minor.Build-PreRelease+CommitHash.BranchName.
 -->
-<Package Name="Android" xmlns="http://keysight.com/schemas/TAP/Package" InfoLink="" Version="$(GitBranchVersion)">
+<Package Name="Android" xmlns="http://opentap.io/schemas/package" InfoLink="https://morse.uma.es/" Version="1.0.0">
   <Description>Base plugin for controlling Android devices and applications through Adb.</Description>
   <Files>
-    <File Path="UMA\Tap.Plugins.UMA.Android.dll" Obfuscate="false" SetAssemblyInfo="Version"></File>
+    <File Path="UMA\Tap.Plugins.UMA.Android.dll">
+      <SetAssemblyInfo Attributes="Version"/>
+    </File>
   </Files>
 </Package>
