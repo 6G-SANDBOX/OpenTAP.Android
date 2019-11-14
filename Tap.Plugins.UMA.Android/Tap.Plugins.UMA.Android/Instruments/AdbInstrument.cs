@@ -301,6 +301,10 @@ namespace Tap.Plugins.UMA.Android.Instruments
                 else if (process.ExitCode != 0)
                 {
                     Log.Error("Process returned error exit code: {0}", process.ExitCode);
+                    foreach (string line in adbProcess.Receiver.Output)
+                    {
+                        Log.Debug($">> {line}");
+                    }
                 }
                 else
                 {
