@@ -394,7 +394,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
         {
             string[] res = new string[] { };
 
-            IEnumerable<string> deviceFiles = getAvailableLogFiles(logcat.DeviceFilename);
+            IEnumerable<string> deviceFiles = getAvailableLogFiles(logcat.DeviceFilename, logcat.DeviceId);
 
             if (deviceFiles.Count() != 0)
             {
@@ -402,7 +402,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
 
                 try
                 {
-                    IEnumerable<string> localFiles = pullLogFiles(tempFolder, deviceFiles);
+                    IEnumerable<string> localFiles = pullLogFiles(tempFolder, deviceFiles, logcat.DeviceId);
                     res = combineLogFiles(localFiles, localFilename);
                 }
                 finally
@@ -418,12 +418,12 @@ namespace Tap.Plugins.UMA.Android.Instruments
             return res;
         }
 
-        private IEnumerable<string> getAvailableLogFiles(string fileName)
+        private IEnumerable<string> getAvailableLogFiles(string fileName, string deviceId = null)
         {
             string listfiles = fileName + "*";
             Regex filenameRegex = new Regex($"{fileName}(\\.(\\d+))?");
 
-            AdbCommandResult result = this.ExecuteAdbCommand($"shell \"ls {listfiles}\"");
+            AdbCommandResult result = this.ExecuteAdbCommand($"shell \"ls {listfiles}\"", deviceId);
             List<string> files = new List<string>();
 
             if (result.Success)
@@ -452,7 +452,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
             return path;
         }
 
-        private IEnumerable<string> pullLogFiles(string tempDirectory, IEnumerable<string> deviceFiles)
+        private IEnumerable<string> pullLogFiles(string tempDirectory, IEnumerable<string> deviceFiles, string deviceId = null)
         {
             Log.Info($"Pulling log files: {string.Join(", ", deviceFiles)}");
 
@@ -461,7 +461,7 @@ namespace Tap.Plugins.UMA.Android.Instruments
             foreach (string deviceFile in deviceFiles)
             {
                 string localFile = Path.Combine(tempDirectory, Path.GetFileName(deviceFile));
-                AdbCommandResult result = this.Pull(deviceFile, localFile);
+                AdbCommandResult result = this.Pull(deviceFile, localFile, deviceId);
                 if (result.Success)
                 {
                     localFiles.Add(localFile);
