@@ -10,4 +10,7 @@
       <Version>9.12.3</Version>
     </PackageReference>
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo  Copying TapPackage to TAP folder (if exist)&#xD;&#xA;echo  Consider that this step runs before packaging, so a previous build will be moved&#xD;&#xA;IF EXIST &quot;$(TargetDir)/*.TapPackage&quot; copy  /Y &quot;$(TargetDir)/*.TapPackage&quot; &quot;$(TAP_PATH)&quot;" />
+  </Target>
 </Project>
