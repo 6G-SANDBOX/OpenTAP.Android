@@ -7,10 +7,11 @@ Configuration: Can be any kind of information, such as bit version or git branch
 For Version and Configuration the following macros are available (Only works if the project directory is under Git source control):
 $(GitVersion) - Gets the version from Git.
 -->
-<Package Name="UMA.Android" xmlns="http://opentap.io/schemas/package" InfoLink="https://morse.uma.es/" Version="1.0.2">
+<Package Name="UMA.Android" xmlns="http://opentap.io/schemas/package" InfoLink="https://morse.uma.es/" OS="Windows,Linux,OSX"
+         Version="1.0.3">
   <Description>Base plugin for controlling Android devices and applications through Adb.</Description>
   <Files>
-    <File Path="UMA\Tap.Plugins.UMA.Android.dll">
+    <File Path="UMA/Tap.Plugins.UMA.Android.dll">
       <SetAssemblyInfo Attributes="Version"/>
     </File>
   </Files>
