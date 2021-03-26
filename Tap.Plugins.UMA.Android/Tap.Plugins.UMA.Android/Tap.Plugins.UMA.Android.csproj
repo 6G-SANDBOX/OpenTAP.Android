@@ -6,8 +6,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTAP">
-      <Version>9.12.3</Version>
-    </PackageReference>
+    <PackageReference Include="OpenTAP" Version="9.*" />
   </ItemGroup>
 </Project>

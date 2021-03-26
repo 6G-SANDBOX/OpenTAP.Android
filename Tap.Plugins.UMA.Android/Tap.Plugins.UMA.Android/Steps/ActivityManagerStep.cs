@@ -16,7 +16,7 @@ using Tap.Plugins.UMA.Android.Instruments.ActivityManager.Intents;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("Activity Manager",
-             Groups: new string[] { "Triangle", "Android" },
+             Groups: new string[] { "UMA", "Android" },
              Description: "Sends commands to the device's Activity Manager.")]
     public class ActivityManagerStep : AdbCommandStepBase
     {
