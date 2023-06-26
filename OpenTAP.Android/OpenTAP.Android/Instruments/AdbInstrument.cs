@@ -17,7 +17,7 @@ using Tap.Plugins.UMA.Android.Instruments.Logcat;
 namespace Tap.Plugins.UMA.Android.Instruments
 {
     [Display("adb Instrument",
-        Group: "UMA",
+        Group: "Android",
         Description: "Instrument for executing commands through Android's adb tool")]
     public class AdbInstrument : Instrument
     {

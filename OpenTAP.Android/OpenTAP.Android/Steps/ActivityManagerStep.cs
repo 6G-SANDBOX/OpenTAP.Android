@@ -1,4 +1,4 @@
-﻿// Author:      Bruno Garcia Garcia <bgarcia@lcc.uma.es>
+﻿// Author:      Bruno Garcia Garcia <bgg@uma.es>
 // Copyright:   Copyright 2016-2021 Universidad de Málaga (University of Málaga), Spain
 //
 // This file is part of the TRIANGLE project. The TRIANGLE project is funded by the European Union’s
@@ -16,7 +16,7 @@ using Tap.Plugins.UMA.Android.Instruments.ActivityManager.Intents;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("Activity Manager",
-             Groups: new string[] { "UMA", "Android" },
+             Groups: new string[] { "Android" },
              Description: "Sends commands to the device's Activity Manager.")]
     public class ActivityManagerStep : AdbCommandStepBase
     {

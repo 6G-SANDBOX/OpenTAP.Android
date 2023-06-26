@@ -11,7 +11,7 @@ using Tap.Plugins.UMA.Android.Instruments.Logcat;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("Retrieve Background Logcat",
-        Groups: new string[] { "UMA", "Android" },
+        Groups: new string[] { "Android" },
         Description: "Gets the logcat from background process running in an Android device, and stops it.")]
     public class RetrieveBackgroundLogcatStep : AdbStepBase
     {

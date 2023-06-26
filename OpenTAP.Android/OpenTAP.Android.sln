@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tap.Plugins.UMA.Android", "Tap.Plugins.UMA.Android\Tap.Plugins.UMA.Android.csproj", "{3EFF847F-EEFC-4A7A-B4E8-5DB9B7C2DACF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTAP.Android", "OpenTAP.Android\OpenTAP.Android.csproj", "{3EFF847F-EEFC-4A7A-B4E8-5DB9B7C2DACF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

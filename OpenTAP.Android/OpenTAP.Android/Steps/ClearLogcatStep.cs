@@ -10,7 +10,7 @@ using Tap.Plugins.UMA.Android.Instruments;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("Clear logcat",
-        Groups: new string[] { "UMA", "Android" },
+        Groups: new string[] { "Android" },
         Description: "Clears the logcat from an Android device.")]
     public class ClearLogcatStep : AdbStepBase
     {
