@@ -16,7 +16,7 @@ using Tap.Plugins.UMA.Android.Instruments.Logcat;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("Logcat",
-        Groups: new string[] { "UMA", "Android" },
+        Groups: new string[] { "Android" },
         Description: "Gets the logcat from an Android device.")]
     public class LogcatStep : AdbStepBase
     {

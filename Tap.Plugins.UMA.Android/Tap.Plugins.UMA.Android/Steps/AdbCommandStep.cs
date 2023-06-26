@@ -11,7 +11,7 @@ using Tap.Plugins.UMA.Android.Instruments;
 namespace Tap.Plugins.UMA.Android.Steps
 {
     [Display("adb Command",
-        Groups: new string[] { "UMA", "Android" },
+        Groups: new string[] { "Android" },
         Description: "Send a command using Android's adb tool")]
     public class AdbCommandStep : AdbCommandStepBase
     {
